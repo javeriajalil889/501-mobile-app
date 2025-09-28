@@ -7,7 +7,8 @@ Add colors and text labels to visualize space usage.
 ## Getting Started
 
 ### Building & Running
-1. Clone the repository (if applicable): `git clone [URL_to_your_repository]`
+1. Clone the repository (if applicable): `git clone https://github.com/javeriajalil889/501-mobile-app.git`
+2. cd into the directory: ` CS501_MOBILE_APP_MAIN/assignment3/Q1Row& ColumnWeightSplitLayout`
 2. Open the project in Android Studio.
 3. Let Gradle sync.
 4. Run on an emulator or device.
