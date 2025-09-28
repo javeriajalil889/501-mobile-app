@@ -1,8 +1,8 @@
-# [Q1 Row & Column Weight Split Layout]]
+# Q1 Row & Column Weight Split Layout
 
-[This assignment uses Row and Columns, to build a row with two sections. One section takes 25% of the width and the other 75%.
+This assignment uses Row and Columns, to build a row with two sections. One section takes 25% of the width and the other 75%.
 Inside the larger section, use a Column with 3 weighted children of different proportions (e.g., 2:3:5).
-Add colors and text labels to visualize space usage.]
+Add colors and text labels to visualize space usage.
 
 ## Getting Started
 
@@ -13,10 +13,10 @@ Add colors and text labels to visualize space usage.]
 4. Run on an emulator or device.
 
 ## Technologies Used
-* [Main Language, e.g., Kotlin]
-* [Key Framework/UI Toolkit, e.g., Jetpack Compose]
-* [Any other important libraries or tools]
+* Main Language, e.g., Kotlin
+* Key Framework/UI Toolkit, e.g., Jetpack Compose
+
 
 ## Author(s)
-* [Javeria Jalil] 
+* Javeria Jalil] 
 
