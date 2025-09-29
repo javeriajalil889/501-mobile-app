@@ -1,4 +1,4 @@
-Q3 Lazy Colum with Sticky Headers
+# Q3 Lazy Colum with Sticky Headers
 This assignment does the following:
 - Build a contact list grouped alphabetically.
 - Use stickyHeader to keep the current letter visible as the list scrolls.
@@ -6,8 +6,9 @@ This assignment does the following:
 - Add a “Scroll to Top” floating action button (FAB) that appears only when the user has scrolled past item 10.
 - Use animateScrollToItem() with coroutines.
 
-Getting Started
-Building & Running
+## Getting Started
+
+### Building & Running
 Clone the repository (if applicable): git clone https://github.com/javeriajalil889/501-mobile-app.git
 cd into the directory:  CS501_MOBILE_APP_MAIN/assignment3/Q3LazyColumnwithStickyHeaders
 
@@ -16,10 +17,10 @@ Let Gradle sync.
 Run on an emulator or device.
 
 
-Technologies Used
+## Technologies Used
 Main Language, e.g., Kotlin
 Key Framework/UI Toolkit, e.g., Jetpack Compose
 
 
-Author(s)
+## Author(s)
 Javeria Jalil
