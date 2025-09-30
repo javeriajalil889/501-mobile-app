@@ -108,7 +108,61 @@ fun LoginForm(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostStat
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-    }}
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                passwordError = null
+            },
+            label = { Text("Password") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            isError = passwordError != null,
+            supportingText = {
+                if (passwordError != null) {
+                    Text(text = passwordError!!, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                cursorColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                usernameError = null
+                passwordError = null
+                var isValid = true
+                if (username.isBlank()) {
+                    usernameError = "Username cannot be empty"
+                    isValid = false
+                }
+                if (password.isBlank()) {
+                    passwordError = "Password cannot be empty"
+                    isValid = false
+                }
+
+                if (isValid) {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Login Successful!")
+                    }
+                    println("Login attempt: Username - $username, Password - $password")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Login")
+        }
+    }
+}
+
+
 @Preview(showBackground = true, name = "Login Form Preview")
 @Composable
 fun LoginFormPreview() {
