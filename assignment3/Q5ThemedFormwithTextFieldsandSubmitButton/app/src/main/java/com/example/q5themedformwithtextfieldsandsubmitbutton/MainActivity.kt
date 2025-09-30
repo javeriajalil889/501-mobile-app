@@ -63,14 +63,59 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun LoginForm(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostState) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var usernameError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
+    Column(
+        modifier = modifier
+            .padding(16.dp), // more padding for the content within the form area
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Login",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = username,
+            onValueChange = {
+                username = it
+                usernameError = null
+            },
+            label = { Text("Username") },
+            singleLine = true,
+            isError = usernameError != null,
+            supportingText = {
+                if (usernameError != null) {
+                    Text(text = usernameError!!, color = MaterialTheme.colorScheme.error)
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                cursorColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }}
 @Preview(showBackground = true, name = "Login Form Preview")
 @Composable
 fun LoginFormPreview() {
     Q5ThemedFormWithTextFieldsAndSubmitButtonTheme {
         val snackbarHostState = remember { SnackbarHostState() }
         LoginForm(
-            modifier = Modifier.fillMaxSize(), // Preview typically won't have real system insets
+            modifier = Modifier.fillMaxSize(),
             snackbarHostState = snackbarHostState
         )
     }
