@@ -23,14 +23,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.activity.viewModels
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
     //get reference to the mainviewmodel
     //here we get ViewModel instance in an activity, viewModels(), handles creating
     //the viewModel the first time, and retriving the exisiting instance on subsequent
     //creations of an acitivity (such as a rotation)
-    private val viewModel = MainViewModel by viewModels()
-
+    private val viewModel by viewModels<MainViewModel>()
+    private val TAG = "ActivityStateTransition"
     override fun onCreate(savedInstanceState: Bundle?) {
         /**
          * `onCreate` is the very first method called when the activity is created.
@@ -54,6 +59,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //call our main composable function which contains the UI, and its own lifecycle observer
+                    LogListScreen(viewModel=viewModel)
                 }
               LifecycleDemoScreen()
             }
@@ -175,6 +181,26 @@ fun LifecycleDemoScreen(lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.cur
     }
 }
 
+
+
+@Composable
+fun LogListScreen(viewModel: MainViewModel){
+    //observe the logs stateFlow from viewModel
+    //collectAsState(), convert the flow into State, which recomposes the UI on updates
+    val logs by viewModel.logs.collectAsState()
+    //LazyColumn efficent way to display scorelling list
+    //only composes and lays out items that are currently visible
+    LazyColumn(modifier=Modifier.padding(16.dp)){
+        items(logs) { log -> // Loop through each log in the list
+            Text(
+                text = "[${log.timestamp}] Event: ${log.eventName}",
+                color=log.color,
+                modifier= Modifier.padding(vertical=4.dp)
+            )
+
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
