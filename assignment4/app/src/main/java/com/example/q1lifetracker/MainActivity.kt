@@ -24,10 +24,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     //get reference to the mainviewmodel
@@ -61,7 +72,6 @@ class MainActivity : ComponentActivity() {
                     //call our main composable function which contains the UI, and its own lifecycle observer
                     LogListScreen(viewModel=viewModel)
                 }
-              LifecycleDemoScreen()
             }
         }
     }
@@ -184,23 +194,68 @@ fun LifecycleDemoScreen(lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.cur
 
 
 @Composable
-fun LogListScreen(viewModel: MainViewModel){
+fun LogListScreen(viewModel: MainViewModel) {
     //observe the logs stateFlow from viewModel
     //collectAsState(), convert the flow into State, which recomposes the UI on updates
     val logs by viewModel.logs.collectAsState()
-    //LazyColumn efficent way to display scorelling list
-    //only composes and lays out items that are currently visible
-    LazyColumn(modifier=Modifier.padding(16.dp)){
-        items(logs) { log -> // Loop through each log in the list
-            Text(
-                text = "[${log.timestamp}] Event: ${log.eventName}",
-                color=log.color,
-                modifier= Modifier.padding(vertical=4.dp)
-            )
+    // Get the state for the switch and snackbar message from the ViewModel
+    val showSnackbar by viewModel.showSnackbar.collectAsState()
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
+    // Scaffold provides a standard layout structure and a place for Snackbars
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // This effect will run whenever the snackbarMessage changes
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let { message ->
+            scope.launch {
+                snackbarHostState.showSnackbar(message)
+                viewModel.onSnackbarShown() // Clear the message after it's shown
+            }
+        }
+    }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // Use padding provided by Scaffold
+                .padding(horizontal = 16.dp)
+        ) {
+            // Row for the setting switch
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Show Snackbar Notification")
+                Switch(
+                    checked = showSnackbar,
+                    onCheckedChange = { viewModel.onShowSnackbarChanged(it) }
+                )
+            }
+            Divider()
+            //LazyColumn efficent way to display scorelling list
+            //only composes and lays out items that are currently visible
+            LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
+                // The explicit type here is good practice and resolves the inference error.
+                items(logs) { log: LogEntry ->
+                    Text(
+                        text = "[${log.timestamp}] Event: ${log.eventName}",
+                        color = log.color,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+            }
         }
     }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable

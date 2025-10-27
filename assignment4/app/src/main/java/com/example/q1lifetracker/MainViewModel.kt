@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -16,6 +17,12 @@ data class LogEntry(
 )
 
 class MainViewModel : ViewModel() {
+    private val _showSnackBar= MutableStateFlow(true)
+    val showSnackBar= _showSnackBar.asStateFlow()
+
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage = _snackbarMessage.asStateFlow()
+
     // A private mutable state flow to hold the list of logs.
     // Only the ViewModel can modify this list.
     private val _logs = MutableStateFlow<List<LogEntry>>(emptyList())
@@ -46,8 +53,19 @@ class MainViewModel : ViewModel() {
             timestamp = getCurrentTimestamp(),
             color = getColorForEvent(eventName)
         )
+        if (_showSnackBar.value){
+            _snackbarMessage.value="LifeCycle Event : $eventName"
+        }
         // Update the state flow with the new list of logs.
         _logs.value = _logs.value + newLog
+    }
+    fun onShowSnackbarChanged(show: Boolean) {
+        _showSnackBar.value = show
+    }
+
+    // Called by the UI after a snackbar has been shown, to clear the message.
+    fun onSnackbarShown() {
+        _snackbarMessage.value = null
     }
 }
     
