@@ -39,6 +39,58 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * onStart is called when the activity is becoming visible to the user. State Transition
+ * created -> started
+ */
+
+override fun onStart(){
+    super.onStart()
+    Log.d(TAG, "[Activity] ==> onStart: The Activity is becoming visible to the user.")
+}
+
+/**
+ * onResume is called when the activity will start interacting with the user.
+ * State Transition : Started --> Resumed (App is running and interactive)
+ */
+
+override fun onResume(){
+    Log.d(TAG, "[Activity] ==> onResume: The Activity is interactive")
+}
+
+/**
+ * onPause is called when the activity is no longer visible to the user. running in background
+ * State Transition : Resumed --> Paused (App is running but not interactive)
+ */
+
+override fun onPause(){
+    super.onPause()
+    Log.d(TAG, "[Activity] ==> onPause: The Activity is going into the background.")
+}
+
+
+/**
+ * onStop is called when the activity is no longer needed to be visible to the user.
+ * State Transition : Paused --> Stopped (App is running but not interactive)
+ */
+
+override fun onStop(){
+    Log.d(TAG, "[Activity] ==> onStop: The Activity is no longer visible to the user."))
+}
+
+
+/**
+ * onDestroy is the final call you recieve before your activity is destroyed
+ * This happens when the user presses Back or the system needs to reclaim memory.
+ * State Transition: Stopped -> Destroyed
+ */
+override fun onDestroy(){
+    super.onDestroy()
+    Log.d(TAG, "[Activity] ==> onDestroy: The Activity is being destroyed.")
+}
+
+
+
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
