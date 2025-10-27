@@ -61,6 +61,7 @@ class MainActivity : ComponentActivity() {
      */
 
     override fun onResume(){
+        super.onResume()
         Log.d(TAG, "[Activity] ==> onResume: The Activity is interactive")
     }
 
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
      */
 
     override fun onStop(){
+        super.onStop()
         Log.d(TAG, "[Activity] ==> onStop: The Activity is no longer visible to the user.")
     }
 
