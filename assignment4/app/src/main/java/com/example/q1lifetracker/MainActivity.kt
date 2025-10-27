@@ -25,9 +25,23 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 
 class MainActivity : ComponentActivity() {
-    private val TAG = "ActivityStateTransition"
+    //get reference to the mainviewmodel
+    //here we get ViewModel instance in an activity, viewModels(), handles creating
+    //the viewModel the first time, and retriving the exisiting instance on subsequent
+    //creations of an acitivity (such as a rotation)
+    private val viewModel = MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        /**
+         * `onCreate` is the very first method called when the activity is created.
+         * This is where you set up the activity, including setting the Compose content.
+         * State Transition: (Does not exist) -> Created
+         */
         super.onCreate(savedInstanceState)
+        //log the onCreate  event
+        //addLog(), call this function, in our viewModel, passing name of lifecyle event
+        //every time an event occurs, it will be added inside our viewModel object.
+        viewModel.addLog("onCreate")
         Log.d(TAG, "[Activity] ==> onCreate: The Activity is being created.")
         enableEdgeToEdge()
             // setContent: entry point for jetPack Compose
@@ -45,6 +59,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     /**
      * onStart is called when the activity is becoming visible to the user. State Transition
      * created -> started
@@ -52,7 +67,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart(){
         super.onStart()
-        Log.d(TAG, "[Activity] ==> onStart: The Activity is becoming visible to the user.")
+        //log onStart event
+        viewModel.addLog("onStart")
+        Log.d(TAG, "[Activity] ==> onStart: The Activity is about to become visible.")
+
     }
 
     /**
@@ -62,6 +80,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume(){
         super.onResume()
+        viewModel.addLog("onResume")
         Log.d(TAG, "[Activity] ==> onResume: The Activity is interactive")
     }
 
@@ -72,6 +91,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onPause(){
         super.onPause()
+        viewModel.addLog("onPause")
         Log.d(TAG, "[Activity] ==> onPause: The Activity is going into the background.")
     }
 
@@ -83,6 +103,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop(){
         super.onStop()
+        viewModel.addLog("onStop")
         Log.d(TAG, "[Activity] ==> onStop: The Activity is no longer visible to the user.")
     }
 
@@ -94,9 +115,11 @@ class MainActivity : ComponentActivity() {
      */
     override fun onDestroy(){
         super.onDestroy()
+        viewModel.addLog("onDestroy")
         Log.d(TAG, "[Activity] ==> onDestroy: The Activity is being destroyed.")
     }
 }
+
 
 
 
