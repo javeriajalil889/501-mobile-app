@@ -2,4 +2,6 @@
 <resources>
 
     <style name="Theme.Q1LifeTracker" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Q2Counter" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>

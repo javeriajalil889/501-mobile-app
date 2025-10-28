@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Q1LifeTracker"
 include(":app")
+include(":app")
