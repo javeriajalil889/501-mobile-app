@@ -16,8 +16,14 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.compose.foundation.clickable import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 
 private const val TAG = "Navigation Demo"
 class MainActivity : ComponentActivity() {
@@ -45,6 +54,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+val recipes = listOf(
+    Recipe(1, "Chicken Shawarma", listOf("Chicken", "Pita", "Garlic Sauce"), listOf("Marinate chicken", "Cook chicken", "Assemble shawarma")),
+    Recipe(2, "Sweet Potato Gnocchi", listOf("Sweet Potato", "Flour", "Egg"), listOf("Bake potatoes", "Mix dough", "Boil gnocchi")),
+    Recipe(3, "Spaghetti Bolognese", listOf("Spaghetti", "Ground Beef", "Tomato Sauce"), listOf("Make the sauce", "Cook spaghetti", "Combine and serve"))
+)
 @SuppressLint("RestrictedApi")
 @Composable
 fun App() {
@@ -59,17 +73,24 @@ fun App() {
         }
     }
 
-    //This is where navigation happens, NavHost is a composable that displays other composables
+    //This is where navigation happens, NavHost is a composable that displays other composable
     //based on the current destination based on a path , acts as nav graph for your app
     NavHost(
         navController= navController, // controller manages navigation
         startDestination = "home"   // the route of the first screen to be displayed
     ){
         composable("home"){
-            HomeScreen(navController=navController)
+            HomeScreen(navController=navController, recipes= recipes)
         }
-        composable ("details"){
-            DetailsScreen(navController=navController)
+        composable ("details/{recipeId}"){ backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
+            val recipe= recipes.find{it.id == recipeId}
+            if(recipe != null){
+                DetailsScreen(navController=navController, recipe=recipe)
+            }
+            else{
+                Text("Recipe not found")
+            }
         }
         composable("recipe"){
             RecipeScreen(navController=navController)
@@ -83,54 +104,111 @@ HomeScreen()- this will represent a composable showing the Home Screen
 argument: navController, the controller used to navigate other screens
  */
 @Composable
-fun HomeScreen(navController:NavController) {
+fun HomeScreen(navController: NavController, recipes: List<Recipe>) {
     Column(
-        modifier=Modifier.fillMaxSize(),
-        verticalArrangement=Arrangement.Center,
-        horizontalAlignment=Alignment.CenterHorizontally
-    ){
-        Text("Home Screen", style= MaterialTheme.typography.headlineMedium)
-        Spacer(modifier=Modifier.height(16.dp))
-        Button(
-            onClick={
-                Log.d(TAG, "Navigating from Home to Details....")
-                navController.navigate("details")
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Home Screen", style = MaterialTheme.typography.headlineMedium)
+        LazyColumn(
+            modifier = Modifier
+                .padding(16.dp)
+                .weight(1f)
+        ) {
+            items(recipes) { recipe ->
+                // Pass the recipe and an onClick lambda
+                RecipeItem(
+                    recipe = recipe,
+                    onClick = {
+                        // Navigate to the details screen with the specific recipe's id
+                        navController.navigate("details/${recipe.id}")
+                    }
+                )
             }
-        ){
-            Text("Go to Details Screen")
+        }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    Log.d(TAG, "Navigating from Home to Details....")
+                }
+            ) {
+                Text("Go to Details Screen")
+
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = {
+                Log.d(TAG, "Navigating from Home to Recipe....")
+                navController.navigate("recipe")
+            }
+            ) {
+                Text("Go to Recipe Screen")
+            }
 
         }
-
+    }
+@Composable
+fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {     // Each item in the list
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) { // Regular content lambda for Card
+        Text(
+            text = recipe.title,
+            modifier = Modifier
+                .padding(16.dp),
+            style = MaterialTheme.typography.titleMedium
+        )
     }
 }
+
+
+
+
 /*
 DetailsScreen()- this will represent a composable showing the Details Screen
 argument: navController, the controller used to navigate other screens
  */
+
+
 @Composable
-fun DetailsScreen(navController:NavController) {
+fun DetailsScreen(navController: NavController, recipe: Recipe) { // Updated parameter
     Column(
-        modifier=Modifier.fillMaxSize(),
-        verticalArrangement=Arrangement.Center,
-        horizontalAlignment=Alignment.CenterHorizontally
-    ){
-        Text("Details Screen", style= MaterialTheme.typography.headlineMedium)
-        Spacer(modifier=Modifier.height(16.dp))
-        Button(
-            onClick={
-                //to go back up, we call navController.navigateUp(), this pops current screen (DetailsScreen)
-                //off the back stack, taking user to back screen (HomeScreen). This method is part of NavController
-                //class , no special imports needed
-                Log.d(TAG, "Navigate back from Details to Home....")
-                navController.navigateUp()
-            }
-        ){
-            Text("Go Back")
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), // Make screen scrollable
+        horizontalAlignment = Alignment.Start // Align content to the start
+    ) {
+        // Display recipe details
+        Text(recipe.title, style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
 
+        Text("Ingredients:", style = MaterialTheme.typography.titleLarge)
+        recipe.ingredients.forEach { ingredient ->
+            Text("• $ingredient", modifier = Modifier.padding(start = 8.dp))
         }
+        Spacer(modifier = Modifier.height(16.dp))
 
+        Text("Steps:", style = MaterialTheme.typography.titleLarge)
+        recipe.steps.forEachIndexed { index, step ->
+            Text("${index + 1}. $step", modifier = Modifier.padding(start = 8.dp))
+        }
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Center the button
+        Button(
+            onClick = { navController.navigateUp() },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text("Go Back")
+        }
     }
 }
+
 
 @Composable
 fun RecipeScreen(navController: NavController) {
@@ -160,7 +238,7 @@ fun RecipeScreen(navController: NavController) {
 @Composable
 fun HomeScreenPreview() {
     Whats_For_DinnerTheme {
-        HomeScreen(navController = rememberNavController())
+        HomeScreen(navController = rememberNavController(), recipes= recipes)
     }
 }
 
@@ -169,7 +247,7 @@ fun HomeScreenPreview() {
 @Composable
 fun DetailsScreenPreview() {
     Whats_For_DinnerTheme {
-        DetailsScreen(navController = rememberNavController())
+        DetailsScreen(navController = rememberNavController(), recipes.first())
     }
 }
 
