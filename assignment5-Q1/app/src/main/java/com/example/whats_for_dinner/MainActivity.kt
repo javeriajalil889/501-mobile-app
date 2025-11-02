@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.whats_for_dinner.ui.theme.Whats_For_DinnerTheme
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,20 +22,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.compose.foundation.clickable import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-
 
 private const val TAG = "Navigation Demo"
 class MainActivity : ComponentActivity() {
@@ -54,17 +59,19 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-val recipes = listOf(
+val initialRecipes = listOf(
     Recipe(1, "Chicken Shawarma", listOf("Chicken", "Pita", "Garlic Sauce"), listOf("Marinate chicken", "Cook chicken", "Assemble shawarma")),
     Recipe(2, "Sweet Potato Gnocchi", listOf("Sweet Potato", "Flour", "Egg"), listOf("Bake potatoes", "Mix dough", "Boil gnocchi")),
     Recipe(3, "Spaghetti Bolognese", listOf("Spaghetti", "Ground Beef", "Tomato Sauce"), listOf("Make the sauce", "Cook spaghetti", "Combine and serve"))
 )
+
 @SuppressLint("RestrictedApi")
 @Composable
 fun App() {
     //rememberNavController - creates and remembers the NavController across recompositions
     //keeps track of back stack of composable that make app screens
     val navController = rememberNavController()
+    var recipes by remember { mutableStateOf(initialRecipes) }
     //log the back stack when it changes, automatically updates when back stack changes
     LaunchedEffect(navController) {
         navController.currentBackStack.collect { backStackEntries ->
@@ -80,31 +87,46 @@ fun App() {
         startDestination = "home"   // the route of the first screen to be displayed
     ){
         composable("home"){
-            HomeScreen(navController=navController, recipes= recipes)
+            //Call HomeScreen once with all its required parameters.
+            HomeScreen(
+                navController = navController,
+                recipes = recipes, // Pass the state variable
+                onAddRecipeClick = { navController.navigate("add_recipe") }
+            )
         }
+
         composable ("details/{recipeId}"){ backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
-            val recipe= recipes.find{it.id == recipeId}
-            if(recipe != null){
+            val recipe = recipes.find { it.id == recipeId }
+            if (recipe != null){
                 DetailsScreen(navController=navController, recipe=recipe)
             }
             else{
                 Text("Recipe not found")
             }
         }
-        composable("recipe"){
-            RecipeScreen(navController=navController)
+        composable("add_recipe") {
+            AddRecipeScreen(
+                navController = navController,
+                onAddRecipe = { newRecipe ->
+                    // This lambda adds the new recipe to the state list
+                    recipes = recipes + newRecipe
+                    navController.popBackStack() // Go back to HomeScreen
+                },
+                // Pass the current list of recipes to find the max ID
+                currentRecipes = recipes
+            )
         }
     }
-
 }
 
 /*
 HomeScreen()- this will represent a composable showing the Home Screen
 argument: navController, the controller used to navigate other screens
  */
+//Added onAddRecipeClick to the function signature
 @Composable
-fun HomeScreen(navController: NavController, recipes: List<Recipe>) {
+fun HomeScreen(navController: NavController, recipes: List<Recipe>, onAddRecipeClick: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -127,26 +149,15 @@ fun HomeScreen(navController: NavController, recipes: List<Recipe>) {
                 )
             }
         }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    Log.d(TAG, "Navigating from Home to Details....")
-                }
-            ) {
-                Text("Go to Details Screen")
-
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                Log.d(TAG, "Navigating from Home to Recipe....")
-                navController.navigate("recipe")
-            }
-            ) {
-                Text("Go to Recipe Screen")
-            }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = onAddRecipeClick){
+            Text("Add New Recipe")
 
         }
+        Spacer(modifier = Modifier.height(16.dp))
     }
+}
 @Composable
 fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {     // Each item in the list
     Card(
@@ -165,15 +176,10 @@ fun RecipeItem(recipe: Recipe, onClick: () -> Unit) {     // Each item in the li
     }
 }
 
-
-
-
 /*
 DetailsScreen()- this will represent a composable showing the Details Screen
 argument: navController, the controller used to navigate other screens
  */
-
-
 @Composable
 fun DetailsScreen(navController: NavController, recipe: Recipe) { // Updated parameter
     Column(
@@ -209,53 +215,93 @@ fun DetailsScreen(navController: NavController, recipe: Recipe) { // Updated par
     }
 }
 
-
 @Composable
-fun RecipeScreen(navController: NavController) {
+fun AddRecipeScreen(navController: NavController, onAddRecipe: (Recipe) -> Unit, currentRecipes: List<Recipe>) {
+    // State for each input field
+    var title by remember { mutableStateOf("") }
+    var ingredients by remember { mutableStateOf("") }
+    var steps by remember { mutableStateOf("") }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text("Recipe Screen", style = MaterialTheme.typography.headlineMedium)
+    ) {
+        Text("Add a New Recipe", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick={
-            Log.d(TAG, "Navigating back from Recipe Screen to Home...")
-            navController.navigateUp()
-        }
-        ){
-            Text("Go Back")
 
-        }
+        // Form fields
+        OutlinedTextField(
+            value = title,
+            onValueChange = { title = it },
+            label = { Text("Recipe Title") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
+        OutlinedTextField(
+            value = ingredients,
+            onValueChange = { ingredients = it },
+            label = { Text("Ingredients (comma separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = steps,
+            onValueChange = { steps = it },
+            label = { Text("Steps (comma separated)") },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Submit Button
+        Button(
+            onClick = {
+                // Find the highest current ID to generate a new unique one
+                // Use the passed-in currentRecipes list
+                val newId = (currentRecipes.maxOfOrNull { it.id } ?: 0) + 1
+                val newRecipe = Recipe(
+                    id = newId,
+                    title = title,
+                    ingredients = ingredients.split(",").map { it.trim() },
+                    steps = steps.split(",").map { it.trim() }
+                )
+                // Use the callback to add the recipe and navigate back
+                onAddRecipe(newRecipe)
+            },
+            // Disable button if the title is empty
+            enabled = title.isNotBlank()
+        ) {
+            Text("Add Recipe")
+        }
     }
 }
-
-
-
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     Whats_For_DinnerTheme {
-        HomeScreen(navController = rememberNavController(), recipes= recipes)
+        HomeScreen(navController = rememberNavController(), recipes = initialRecipes, onAddRecipeClick = {})
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun DetailsScreenPreview() {
     Whats_For_DinnerTheme {
-        DetailsScreen(navController = rememberNavController(), recipes.first())
+        //  Pass the first item from the global initialRecipes list
+        DetailsScreen(navController = rememberNavController(), recipe = initialRecipes.first())
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun RecipeScreenPreview() {
+fun AddRecipeScreenPreview() {
     Whats_For_DinnerTheme {
-        RecipeScreen(navController = rememberNavController())
+        AddRecipeScreen(navController = rememberNavController(), onAddRecipe = {}, currentRecipes = initialRecipes)
     }
 }
