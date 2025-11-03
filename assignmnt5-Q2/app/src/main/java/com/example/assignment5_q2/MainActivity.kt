@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,10 +29,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Notes
-import androidx.compose.material.icons.outlined.Task
-
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import com.example.assignment5_q2.ui.theme.Assignment5_Q2Theme
 
 class MainActivity : ComponentActivity() {
@@ -50,9 +52,9 @@ class MainActivity : ComponentActivity() {
  * all screen related information (route,title,icon) in one place
  */
 sealed class Screen(val route: String, val title: String, val icon: ImageVector){
-    data object Notes: Screen("notes","Notes", Icons.Outlined.Notes)
-    data object Task: Screen("task","Task", Icons.Outlined.Task)
-    data object Calendar: Screen("calendar", "Calendar", Icons.Outlined.CalendarMonth)
+    data object Notes: Screen("notes","Notes", Icons.Default.Notes)
+    data object Task: Screen("task","Task", Icons.Default.Task)
+    data object Calendar: Screen("calendar", "Calendar", Icons.Default.CalendarMonth)
 }
 
 //list of all our screens to easily iterate over for nav bar
@@ -104,15 +106,20 @@ fun MainScreen(){
         }
 
 ){ innerPadding ->
+        val notes= remember { mutableStateListOf("Make sure to feed kitty", "Take out trash", "Buy flowers for home") }
+        val tasks = remember { mutableStateListOf("Task 1", "Task 2", "Task 3") }
         NavHost(
             navController = navController,
             startDestination = Screen.Notes.route, //first screen to show
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding) ,
+            //animations happening here
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            exitTransition = { fadeOut(animationSpec = tween(200)) }
         ) {
             //define composables for each screen in our nav graph
             
-            composable(Screen.Notes.route) { GenericScreen(screen = Screen.Notes) }
-            composable(Screen.Task.route) { GenericScreen(screen = Screen.Task) }
+            composable(Screen.Notes.route) { GenericScreen(screen = Screen.Notes, notes=notes) }
+            composable(Screen.Task.route) { GenericScreen(screen = Screen.Task, tasks=tasks) }
             composable(Screen.Calendar.route) { GenericScreen(screen = Screen.Calendar) }
         }
     }
@@ -124,14 +131,26 @@ the title of the screen passed to it.
 @param screen, the Screen object containging the title to displau
  */
 @Composable
-fun GenericScreen(screen:Screen){
+fun GenericScreen(screen:Screen, tasks: List<String>?=null, notes: List<String>?=null){
     Box(
         modifier=Modifier.fillMaxSize(), 
         contentAlignment= Alignment.Center
     ){
         Column(horizontalAlignment = Alignment.CenterHorizontally){
             Icon(imageVector = screen.icon, contentDescription = null, modifier = Modifier.padding(bottom = 8.dp))
-            Text(text = screen.title, style = MaterialTheme.typography.headlineMedium)        
+            Text(text = screen.title, style = MaterialTheme.typography.headlineMedium)
+
+            if (screen is Screen.Task && tasks != null) {
+                tasks.forEach { taskText ->
+                    Text(text = taskText, modifier = Modifier.padding(vertical = 4.dp))
+                }
+            }
+
+            if (screen is Screen.Notes && notes != null) {
+                notes.forEach { notesText ->
+                    Text(text = notesText, modifier = Modifier.padding(vertical = 4.dp))
+                }
+            }
         }
     }
 }
