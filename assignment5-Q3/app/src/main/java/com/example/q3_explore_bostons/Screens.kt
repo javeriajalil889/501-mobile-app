@@ -7,17 +7,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
-import com.example.q3_explore_bostons.DataSource.DataSource.categories
-import com.example.q3_explore_bostons.DataSource.DataSource.getPlaceById
-import com.example.q3_explore_bostons.DataSource.DataSource.places
+import com.example.q3_explore_bostons.DataSource.categories
+import com.example.q3_explore_bostons.DataSource.getPlaceById
+import com.example.q3_explore_bostons.DataSource.places
 
 
 //navController, is passed as a parameter, in each screen to handle navigation
@@ -95,4 +101,25 @@ fun DetailScreen(placeId: Int?, modifier: Modifier = Modifier) {
             Text(text = "Place not found.")
         }
     }
+}
+
+//Composable for reusable top app bar
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExploreTopAppBar(title: String, canNavigateBack: Boolean, navigateUp: () -> Unit,
+                     modifier: Modifier = Modifier) {
+    TopAppBar(
+        title = { Text(title) },
+        modifier = modifier,
+        navigationIcon = {
+            if (canNavigateBack) {
+                IconButton(onClick = navigateUp) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        }
+    )
 }
