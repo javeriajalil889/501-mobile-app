@@ -19,6 +19,9 @@ import com.example.q3_explore_bostons.DataSource.DataSource.categories
 import com.example.q3_explore_bostons.DataSource.DataSource.getPlaceById
 import com.example.q3_explore_bostons.DataSource.DataSource.places
 
+
+//navController, is passed as a parameter, in each screen to handle navigation
+
 //Home Screen
 @Composable
 fun HomeScreen(navController: NavController, modifier: Modifier) {
