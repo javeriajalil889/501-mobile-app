@@ -1,4 +1,5 @@
 package com.example.q3_explore_bostons
+
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -6,11 +7,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Home.route,
+        modifier = modifier
     ) {
         // Home Screen
         composable(route = Screen.Home.route) {
@@ -18,7 +21,6 @@ fun NavGraph(navController: NavHostController) {
         }
         // Categories Screen
         composable(route = Screen.Categories.route) {
-            // FIX 2: And here
             CategoriesScreen(navController = navController, modifier = Modifier)
         }
         // List Screen
@@ -27,7 +29,6 @@ fun NavGraph(navController: NavHostController) {
             arguments = listOf(navArgument("category") { type = NavType.StringType })
         ) { backStackEntry ->
             ListScreen(
-                // FIX 2: And here
                 navController = navController,
                 category = backStackEntry.arguments?.getString("category")
             )
