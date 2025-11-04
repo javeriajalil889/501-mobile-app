@@ -39,6 +39,8 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             arguments = listOf(navArgument("placeId") { type = NavType.IntType })
         ) { backStackEntry ->
             DetailScreen(
+                //passing navController here as a param
+                navController = navController,
                 placeId = backStackEntry.arguments?.getInt("placeId")
             )
         }

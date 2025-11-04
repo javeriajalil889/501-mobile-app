@@ -22,8 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.Modifier
 import com.example.q3_explore_bostons.DataSource.categories
-import com.example.q3_explore_bostons.DataSource.getPlaceById
 import com.example.q3_explore_bostons.DataSource.places
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
+
 
 
 //navController, is passed as a parameter, in each screen to handle navigation
@@ -86,17 +89,32 @@ fun ListScreen(navController: NavController, category: String?, modifier: Modifi
 }
 //Details Screen
 @Composable
-fun DetailScreen(placeId: Int?, modifier: Modifier = Modifier) {
-    // find the specific place using the ID passed as an argument
-    val place = placeId?.let { getPlaceById(it) }
+//  add navController as a param
+fun DetailScreen(navController: NavController, placeId: Int?, modifier: Modifier = Modifier) {
+    val place = placeId?.let { DataSource.getPlaceById(it) }
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (place != null) {
             Text(text = "Name: ${place.name}")
             Text(text = "Description: ${place.description}")
+            //add button to navigate home
+            Button(
+                onClick = {
+                    navController.navigate(Screen.Home.route) {
+                        //key part for stack management, takes us back to home
+                        popUpTo(Screen.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                modifier = Modifier.padding(top = 24.dp)
+            ) {
+                Text(text = "Go to Home")
+            }
         } else {
             Text(text = "Place not found.")
         }
