@@ -1,49 +1,55 @@
 package com.example.assignment4_q3
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class TemperatureViewModel : ViewModel() {
-    //
-    // hold last 20 readings
-    private val _temperatureReadings= MutableStateFlow<List<Float>>(emptyList())
+    // Hold the last 20 temperature readings
+    private val _temperatureReadings = MutableStateFlow<List<Float>>(emptyList())
     val temperatureReadings: StateFlow<List<Float>> = _temperatureReadings
-    //control weather simulation
+
+    // Control whether the simulation is running
     private val _isRunning = MutableStateFlow(true)
     val isRunning: StateFlow<Boolean> = _isRunning
 
     /**
-     * init block is executed when the ViewModel instance is created.
+     * The init block is executed when the ViewModel instance is first created.
      */
     init {
-       startTemperatureSimulation()
+        startTemperatureSimulation()
     }
 
-    private fun startTemperatureSimulation(){
+    private fun startTemperatureSimulation() {
         viewModelScope.launch {
-            while(true){
-                if(_isRunning.value){
-                    // generates random temperature between 65 and 85
-                    val newTemp= Random.nextFloat()* 20f +65f
-                    //adding to lst to keep last 20
-                    val updated=(_temperatureReadings.value + newTemp).takeLast(20)
-                    _temperatureReadings.value=updated
-                    delay(2000)
+            while (true) {
+                // Only generate new temperatures if the simulation is running
+                if (_isRunning.value) {
+                    // Generates a random temperature between 65 and 85
+                    val newTemp = Random.nextFloat() * 20f + 65f
+                    // Add the new temperature and keep only the last 20 readings
+                    val updatedReadings = (_temperatureReadings.value + newTemp).takeLast(20)
+                    _temperatureReadings.value = updatedReadings
                 }
+                // Wait for 2 seconds before the next update
+                delay(2000)
             }
         }
     }
 
-    fun pause(){
-        _isRunning.value=false
+    fun pause() {
+        _isRunning.value = false
     }
 
-    fun resume(){
-        _isRunning.value=true
-
+    fun resume() {
+        _isRunning.value = true
     }
-    // summary calculations
-    val current: Float?
-        get()=temperatureReadings.value.lastOrNull()
+
+    // Summary calculations
     val average: Float?
         get() = temperatureReadings.value.takeIf { it.isNotEmpty() }?.average()?.toFloat()
 
@@ -52,5 +58,4 @@ class TemperatureViewModel : ViewModel() {
 
     val max: Float?
         get() = temperatureReadings.value.maxOrNull()
-
 }
