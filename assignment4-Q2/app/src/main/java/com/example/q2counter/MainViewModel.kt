@@ -48,6 +48,15 @@ class MainViewModel : ViewModel() {
      */
     val counterStateFlow: StateFlow<Int> = _counterStateFlow.asStateFlow()
 
+    //auto mode flag
+    private val _isAutoMode=MutuableStateFlow(false)
+    val isAutoMode= _isAutoMode.asStateFlow()
+
+    //function to toggle auto mode
+    fun toggleAutoMode(){
+        _isAutoMode.value=!_isAutoMode.value
+    }
+
     /**
      * Increments the value of the counter held by [_counterStateFlow].
      * Observers of [counterStateFlow] will be notified of the new value.
@@ -61,7 +70,6 @@ class MainViewModel : ViewModel() {
 
     fun decrementCounter() {
         _counterStateFlow.value -= 1
-        // Alternative update for more complex logic: _counterStateFlow.update { currentValue -> currentValue + 1 }
         println("ViewModel Log: StateFlow counter decremented to ${_counterStateFlow.value}")
     }
 
@@ -100,6 +108,14 @@ class MainViewModel : ViewModel() {
      */
     init {
         println("ViewModel Log: MainViewModel initialized")
+        viewModelScope.launch(){
+            while (true){
+                if(_isAutoMode.value){
+                    _counterStateFlow.value+=1
+                }
+                delay(3000) //delays 3 seconds
+            }
+        }
     }
 
     /**
