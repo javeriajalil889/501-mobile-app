@@ -49,12 +49,19 @@ class MainViewModel : ViewModel() {
     val counterStateFlow: StateFlow<Int> = _counterStateFlow.asStateFlow()
 
     //auto mode flag
-    private val _isAutoMode=MutuableStateFlow(false)
+    private val _isAutoMode=MutableStateFlow(false)
     val isAutoMode= _isAutoMode.asStateFlow()
 
     //function to toggle auto mode
     fun toggleAutoMode(){
         _isAutoMode.value=!_isAutoMode.value
+    }
+
+    private val _autoInterval = MutableStateFlow(3000L)
+    val autoInterval = _autoInterval.asStateFlow()
+
+    fun setAutoInterval(newInterval: Long) {
+        _autoInterval.value = newInterval
     }
 
     /**
@@ -113,7 +120,7 @@ class MainViewModel : ViewModel() {
                 if(_isAutoMode.value){
                     _counterStateFlow.value+=1
                 }
-                delay(3000) //delays 3 seconds
+                delay(_autoInterval.value)
             }
         }
     }
