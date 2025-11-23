@@ -26,7 +26,7 @@ class GyroscopeSensor(context: Context) : SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_GYROSCOPE) {
-            _rotation.value = event.values
+            _rotation.value = event.values.clone()
         }
     }
 
