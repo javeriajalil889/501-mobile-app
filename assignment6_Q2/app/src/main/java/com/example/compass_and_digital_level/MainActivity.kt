@@ -43,12 +43,36 @@ class MainActivity : ComponentActivity() {
 
     private val sensorEventListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent?) {
-            event?.let {
-                when (it.sensor.type) {
-                    Sensor.TYPE_ACCELEROMETER -> gravity = it.values.clone()
-                    Sensor.TYPE_MAGNETIC_FIELD -> geomagnetic = it.values.clone()
+            event?.let { e ->
+
+                when (e.sensor.type) {
+                    //  accelerometer: handles both compass & digital level
+                    Sensor.TYPE_ACCELEROMETER -> {
+                        // save gravity values for compass
+                        gravity = e.values.clone()
+
+                        // digitial level: for roll and pitch
+                        val x = e.values[0]
+                        val y = e.values[1]
+                        val z = e.values[2]
+
+                        val roll = Math.toDegrees(Math.atan2(y.toDouble(), z.toDouble()))
+                        val pitch = Math.toDegrees(
+                            Math.atan2(
+                                -x.toDouble(),
+                                Math.sqrt((y * y + z * z).toDouble())
+                            )
+                        )
+                        compassViewModel.updateRollPitch(roll.toFloat(), pitch.toFloat())
+                    }
+
+                    //  magentometer used only for compass
+                    Sensor.TYPE_MAGNETIC_FIELD -> {
+                        geomagnetic = e.values.clone()
+                    }
                 }
 
+                // compass calculation: use both accelerometer and magnetometer
                 val R = FloatArray(9)
                 val I = FloatArray(9)
                 if (SensorManager.getRotationMatrix(R, I, gravity, geomagnetic)) {
@@ -59,6 +83,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
