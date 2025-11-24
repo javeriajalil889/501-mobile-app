@@ -31,6 +31,9 @@ class MainActivity : ComponentActivity() {
     private var accelerometer: Sensor? = null
     private var magnetometer: Sensor? = null
 
+    private var gyroscope: Sensor? = null
+
+
     // viewmodel to store azimuth
     private val compassViewModel = CompassViewModel()
 
@@ -68,6 +71,7 @@ class MainActivity : ComponentActivity() {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
         setContent {
             MaterialTheme {
