@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Compass_and_digital_level" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
