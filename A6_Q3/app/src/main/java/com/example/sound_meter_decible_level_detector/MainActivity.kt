@@ -8,6 +8,7 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -74,55 +75,58 @@ class MainActivity : AppCompatActivity() {
         }
     }
 //this function is called to start meter
-    private fun startMeter() {
-        val sampleRate = 44100
-        val channelConfig = AudioFormat.CHANNEL_IN_MONO
-        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
-        val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+private fun startMeter() {
+    val sampleRate = 44100
+    val channelConfig = AudioFormat.CHANNEL_IN_MONO
+    val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+    val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) return
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        != PackageManager.PERMISSION_GRANTED) return
 
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            sampleRate,
-            channelConfig,
-            audioFormat,
-            minBufferSize
-        )
+    audioRecord = AudioRecord(
+        MediaRecorder.AudioSource.MIC,
+        sampleRate,
+        channelConfig,
+        audioFormat,
+        minBufferSize
+    )
 
-        val buffer = ShortArray(minBufferSize)
-        audioRecord?.startRecording()
-        isRecording = true
+    val buffer = ShortArray(minBufferSize)
+    audioRecord?.startRecording()
+    isRecording = true
 
-        recordingThread = Thread {
-            while (isRecording) {
-                val readSize = audioRecord?.read(buffer, 0, buffer.size) ?: 0
-                if (readSize > 0) {
-                    val rms = buffer.take(readSize).map { it.toDouble() * it.toDouble() }.average()
-                    val amplitude = sqrt(rms)
-                    val db = if (amplitude > 0) 20 * log10(amplitude) else 0.0
+    recordingThread = Thread {
+        while (isRecording) {
+            val readSize = audioRecord?.read(buffer, 0, buffer.size) ?: 0
+            if (readSize > 0) {
+                val rms = buffer.take(readSize).map { it.toDouble() * it.toDouble() }.average()
+                val amplitude = sqrt(rms)
+                val db = if (amplitude > 0) 20 * log10(amplitude) else 0.0
 
-                    runOnUiThread {
-                        if (isFinishing || isDestroyed) return@runOnUiThread
-                        dbText.text = String.format("%.1f dB", db)
-                        meterBar.progress = db.toInt().coerceIn(0, 120)
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    dbText.text = String.format("%.1f dB", db)
+                    meterBar.progress = db.toInt().coerceIn(0, 120)
 
-                        val textColor = if (db > thresholdDb) {
-                            ContextCompat.getColor(this, android.R.color.holo_red_light)
-                        } else {
-                            ContextCompat.getColor(this, android.R.color.white)
-                        }
-                        dbText.setTextColor(textColor)
+                    val textColor: Int
+                    if (db > thresholdDb) {
+                        textColor = ContextCompat.getColor(this, android.R.color.holo_red_light)
+                        Toast.makeText(this, "Noise level is too high!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        textColor = ContextCompat.getColor(this, android.R.color.white)
                     }
+                    dbText.setTextColor(textColor)
                 }
             }
-            audioRecord?.stop()
-            audioRecord?.release()
-            audioRecord = null
         }
-        recordingThread.start()
+        audioRecord?.stop()
+        audioRecord?.release()
+        audioRecord = null
     }
+    recordingThread.start()
+}
+
 
     override fun onPause() {
         super.onPause()
