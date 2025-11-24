@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">altitude-change</string>
+    <string name="altitude_format">Altitude: %.2f m</string>
+    <string name="sensor_not_available">Pressure sensor not available</string>
+</resources>
