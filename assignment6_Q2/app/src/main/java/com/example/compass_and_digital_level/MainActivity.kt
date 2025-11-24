@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    CompassScreen(
+                    CompassAndLevelScreen(
                         viewModel = compassViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -116,6 +116,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         accelerometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
         magnetometer?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
+           gyroscope?.let { sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI) }
     }
     // this function will unregister the sensor listener
     override fun onPause() {
@@ -124,43 +125,77 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-//this is the compass screen composable
+// this is the main screen that will display the compass and digital level
 @Composable
-fun CompassScreen(viewModel: CompassViewModel, modifier: Modifier) {
+fun CompassAndLevelScreen(viewModel: CompassViewModel, modifier: Modifier = Modifier) {
     val azimuth by viewModel.azimuth
+    val roll by viewModel.roll
+    val pitch by viewModel.pitch
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF101010)),
         contentAlignment = Alignment.Center
     ) {
-        // compass background circle
-        Box(
-            modifier = Modifier
-                .size(300.dp)
-                .background(Color.DarkGray, shape = CircleShape),
-            contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            // compass needle
-            Image(
-                painter = painterResource(id = R.drawable.compass_needle),
-                contentDescription = "Compass Needle",
-                modifier = Modifier
-                    .size(200.dp)
-                    .rotate(-azimuth) // rotate opposite of azimuth
-            )
-        }
 
-        //displays heading
-        Text(
-            text = "${azimuth.toInt()}°",
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp),
-            style = MaterialTheme.typography.headlineMedium
-        )
+            //compass
+            Box(
+                modifier = Modifier
+                    .size(300.dp)
+                    .background(Color.DarkGray, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                // Compass needle
+                Image(
+                    painter = painterResource(id = R.drawable.compass_needle),
+                    contentDescription = "Compass Needle",
+                    modifier = Modifier
+                        .size(200.dp)
+                        .rotate(-azimuth) // rotate opposite of azimuth
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // heading
+            Text(
+                text = "Heading: ${azimuth.toInt()}°",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // digital level
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .background(Color.DarkGray, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Roll: ${roll.toInt()}°",
+                        color = Color.Cyan,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Pitch: ${pitch.toInt()}°",
+                        color = Color.Cyan,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+        }
     }
 }
+
 
